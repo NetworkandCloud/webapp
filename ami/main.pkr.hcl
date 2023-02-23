@@ -32,7 +32,7 @@ variable "aws-secret-access-key" {
 }
 variable "ami_user" {
   type    = list(string)
-  default = ["776479296963 ","972493460677"]
+  default = ["776479296963","972493460677"]
 }
 
 source "amazon-ebs" "my-ami" {
