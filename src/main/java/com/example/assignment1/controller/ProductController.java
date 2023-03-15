@@ -161,6 +161,7 @@ public class ProductController {
 		} catch (DataNotFoundExeception e) {
 			return new ResponseEntity<String>(e.getMessage(), HttpStatus.NOT_FOUND);
 		} catch (Exception e) {
+			System.out.println(e);
 			return new ResponseEntity<String>(UserConstants.InternalErr, HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 

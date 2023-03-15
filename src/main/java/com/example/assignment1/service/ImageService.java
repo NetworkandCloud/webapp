@@ -7,15 +7,21 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.UUID;
 
+import com.amazonaws.services.s3.AmazonS3;
+import com.amazonaws.services.s3.model.ListObjectsV2Request;
+import com.amazonaws.services.s3.model.ListObjectsV2Result;
+import com.amazonaws.services.s3.model.ObjectMetadata;
+import com.amazonaws.services.s3.model.S3ObjectSummary;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.amazonaws.services.s3.AmazonS3;
 
 import com.example.assignment1.exeception.DataNotFoundExeception;
 import com.example.assignment1.exeception.BadInputException;
+import com.example.assignment1.exeception.InvalidInputException;
 import com.example.assignment1.model.Image;
 import com.example.assignment1.repository.ImageRepository;
 
@@ -35,31 +41,27 @@ public class ImageService {
 	@Autowired
     private AmazonS3 amazonS3;
 
-	public Image saveImage(Long productId, Long userId, MultipartFile file) {
+	public Image saveImage(Long productId, Long userId, MultipartFile file) throws InvalidInputException   {
 		// check if the file is empty
 		if (file.isEmpty()) {
-			throw new IllegalStateException("Cannot upload empty file");
+			throw new InvalidInputException("Cannot upload empty file");
 		}
 		System.out.println("30");
-		// Check if the file is an image
-//        if (!Arrays.asList(IMAGE_PNG.getMimeType(),
-//                IMAGE_BMP.getMimeType(),
-//                IMAGE_GIF.getMimeType(),
-//                IMAGE_JPEG.getMimeType()).contains(file.getContentType())) {
-//            throw new IllegalStateException("FIle uploaded is not an image");
-//        }
-		// get file metadata
-		Map<String, String> metadata = new HashMap<>();
-		metadata.put("Content-Type", file.getContentType());
-		metadata.put("Content-Length", String.valueOf(file.getSize()));
-		// Save Image in S3 and then save Todo in the database
+
+		ObjectMetadata objectMetadata = new ObjectMetadata();
+		objectMetadata.setContentLength(file.getSize());
+		objectMetadata.setContentType(file.getContentType());
+		objectMetadata.setCacheControl("public, max-age=31536000");
 		String path = String.format("%s/%s/%s", bucketName, userId, productId);
 		String fileName = String.format("%s/%s",String.valueOf(UUID.randomUUID()), file.getOriginalFilename());
 		System.out.println(path+" "+fileName);
+		System.out.println(amazonS3);
 		try {
-			fileStore.uploadImage(path, fileName, Optional.of(metadata), file.getInputStream());
-//			System.out.println(amazonS3.getUrl(path, fileName));
+			System.out.println("create Image "+59);
+			amazonS3.putObject(path, fileName,  file.getInputStream(), objectMetadata);
+			System.out.println("create Image "+60);
 		} catch (IOException e) {
+			System.out.println(e);
 			throw new IllegalStateException("Failed to upload file", e);
 		}
 		Image image = Image.builder().productId(productId).fileName(fileName).s3BucketPath(String.valueOf(amazonS3.getUrl(path, fileName))).build();
@@ -67,6 +69,7 @@ public class ImageService {
 	}
 
 	public List<Image> getAllImages(Long productId, Long userId) throws DataNotFoundExeception {
+		// TODO Auto-generated method stub
 		List<Image> images=imageRepository.findImageByProductId(productId);
 		if(images==null)
 			throw new DataNotFoundExeception("No Product with given Id");
@@ -74,6 +77,7 @@ public class ImageService {
 	}
 
 	public Image getImage(Long productId, Long userId, Long imageId) throws DataNotFoundExeception, BadInputException {
+		// TODO Auto-generated method stub
 		Optional<Image> imgObj=imageRepository.findById(imageId);
 		if(imgObj.isEmpty())
 			throw new DataNotFoundExeception("No Image with given Id");
@@ -84,32 +88,35 @@ public class ImageService {
 	}
 
 	public Image deleteImage(Long productId, Long userId, Long imageId)  throws DataNotFoundExeception, BadInputException {
+		// TODO Auto-generated method stub
 		Optional<Image> imgObj=imageRepository.findById(imageId);
 		if(imgObj.isEmpty())
 			throw new DataNotFoundExeception("No Image with given Id");
 		System.out.println(imgObj.get().getProductId()+" "+productId);
 		if(imgObj.get().getProductId()!=productId)
 			throw new BadInputException("ProductId and imageId won't match");
-		System.out.println(imgObj.get().getS3BucketPath()+" "+imgObj.get().getFileName());
-		String path = String.format("%s/%s/%s", bucketName, userId, productId);
-		fileStore.deleteFile(path,imgObj.get().getFileName());
+		String path_name=String.format("%s/%s/%s", userId, productId,imgObj.get().getFileName());
+		fileStore.deleteFile(bucketName,path_name);
+		imageRepository.deleteById(imageId);
 		return imgObj.get();
-//		URL url;
-//		try {
-//			url = new URL(imgObj.get().getS3BucketPath());
-//			System.out.println(url.getPath());
-//			fileStore.deleteFile(url.getPath(),imgObj.get().getFileName());
-//			return imgObj.get();
-//		} catch (MalformedURLException e) {
-//			throw new IllegalStateException("Url Parsing error");
-//		}
-		
+
 	}
-	
+
 	public void deleteImageByProductId(Long productId, Long userId)  throws DataNotFoundExeception {
-//		System.out.println(imgObj.get().getS3BucketPath()+" "+imgObj.get().getFileName());
-		String path = String.format("%s/%s/%s", bucketName, userId, productId);
-		fileStore.deleteFile(path,"/");
+		// TODO Auto-generated method stub
+		String path = String.format("%s/%s/", userId, productId);
+		String folderName = path;
+		System.out.println("line 205 deleteImageByProductId "+path);
+		ListObjectsV2Request listObjectsRequest = new ListObjectsV2Request().withBucketName(bucketName).withPrefix(folderName);
+		ListObjectsV2Result objects = amazonS3.listObjectsV2(listObjectsRequest);
+		System.out.println("Line 107");
+		List<S3ObjectSummary> summaries = objects.getObjectSummaries();
+		System.out.println(objects+" "+summaries);
+		for (S3ObjectSummary summary : summaries) {
+			System.out.println(summary.getKey());
+			amazonS3.deleteObject(bucketName, summary.getKey());
+		}
+		amazonS3.deleteObject(bucketName, folderName);
 	}
 
 }
