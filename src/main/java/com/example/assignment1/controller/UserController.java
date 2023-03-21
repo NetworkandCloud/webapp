@@ -1,5 +1,6 @@
 package com.example.assignment1.controller;
 //import java.util.UUID;
+
 import java.util.stream.Collectors;
 
 import com.example.assignment1.constants.UserConstants;
@@ -13,8 +14,11 @@ import com.example.assignment1.service.AuthService;
 //import constants.UserConstants;
 import com.example.assignment1.service.UserService;
 import com.example.assignment1.model.UserDto;
+import com.timgroup.statsd.StatsDClient;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -37,11 +41,17 @@ public class UserController {
 	
 	@Autowired
 	AuthService authService;
-	
-	
+
+	@Autowired
+	private StatsDClient statsDClient;
+
+	private static final Logger logger = LoggerFactory.getLogger(UserController.class);
+
     @GetMapping(value = "/{userId}")
     public ResponseEntity<?> getUserDetails(@PathVariable("userId") Long userId,HttpServletRequest request){
     	try {
+			logger.info("Start of UserController.createUser with userId ");
+            statsDClient.incrementCounter("endpoint.createUser.http.post");
     		if(userId.toString().isBlank()||userId.toString().isEmpty()) {
             	throw new InvalidInputException("Enter Valid User Id");
             }
@@ -94,6 +104,8 @@ public class UserController {
     @PostMapping()
     public ResponseEntity<?> createUser(@Valid @RequestBody User user,Errors error){
     	try {
+			logger.info("Start of UserController.createUser with userId "+user.getId());
+            statsDClient.incrementCounter("endpoint.createUser.http.post");
     		if(error.hasErrors()) {
     			String response = error.getAllErrors().stream().map(ObjectError::getDefaultMessage)
     					.collect(Collectors.joining(","));
@@ -111,3 +123,4 @@ public class UserController {
     	}
     }
 }
+

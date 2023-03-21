@@ -11,3 +11,5 @@ echo completed Java Installation
 sudo yum install -y tomcat - y
 sudo systemctl start tomcat
 sudo systemctl enable tomcat
+sudo curl -o amazon-cloudwatch-agent.rpm https://s3.amazonaws.com/amazoncloudwatch-agent/amazon_linux/amd64/latest/amazon-cloudwatch-agent.rpm
+sudo rpm -U amazon-cloudwatch-agent.rpm
