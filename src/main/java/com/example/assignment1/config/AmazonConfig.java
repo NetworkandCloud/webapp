@@ -16,21 +16,21 @@ public class AmazonConfig {
 	@Value("${aws.region}")
 	private String accessRegion;
 
-	 @Value("${aws.accessKey}")
-	 private String accessKey;
-	 @Value("${aws.secretKey}")
-	 private String accessSecret;
+//	 @Value("${aws.accessKey}")
+//	 private String accessKey;
+//	 @Value("${aws.secretKey}")
+//	 private String accessSecret;
 
 	@Bean
 	public AmazonS3 amazonS3() {
 
 		//AmazonS3 amazonS3Client = AmazonS3ClientBuilder.standard().build();
 		//return amazonS3Client;
-		AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, accessSecret);
-		return AmazonS3ClientBuilder.standard().withRegion(accessRegion)
-				.withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).build();
+//		AWSCredentials awsCredentials = new BasicAWSCredentials(accessKey, accessSecret);
+//		return AmazonS3ClientBuilder.standard().withRegion(accessRegion)
+//				.withCredentials(new AWSStaticCredentialsProvider(awsCredentials)).build();
 
-		//return AmazonS3ClientBuilder.standard().build();
+		return AmazonS3ClientBuilder.standard().build();
 
 	}
 }

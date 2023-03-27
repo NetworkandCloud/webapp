@@ -51,7 +51,7 @@ public class UserController {
     public ResponseEntity<?> getUserDetails(@PathVariable("userId") Long userId,HttpServletRequest request){
     	try {
 			logger.info("Start of UserController.createUser with userId ");
-            statsDClient.incrementCounter("endpoint.createUser.http.post");
+            statsDClient.incrementCounter("endpoint.getUserDetails.http.get");
     		if(userId.toString().isBlank()||userId.toString().isEmpty()) {
             	throw new InvalidInputException("Enter Valid User Id");
             }
