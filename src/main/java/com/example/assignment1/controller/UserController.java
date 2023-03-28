@@ -50,8 +50,8 @@ public class UserController {
     @GetMapping(value = "/{userId}")
     public ResponseEntity<?> getUserDetails(@PathVariable("userId") Long userId,HttpServletRequest request){
     	try {
-			logger.info("Start of UserController.createUser with userId ");
-            statsDClient.incrementCounter("endpoint.getUserDetails.http.get");
+			logger.info("This is User Post method for User: ");
+			statsDClient.incrementCounter("endpoint.getUserDetails.http.get");
     		if(userId.toString().isBlank()||userId.toString().isEmpty()) {
             	throw new InvalidInputException("Enter Valid User Id");
             }
@@ -76,6 +76,8 @@ public class UserController {
     public ResponseEntity<?> updateUserDetails(@PathVariable("userId") Long userId,@Valid @RequestBody UserUpdateRequestModel user,
     		HttpServletRequest request,Errors error){
     	try {
+			logger.info("This is User Put method for User: ");
+			statsDClient.incrementCounter("endpoint.updateUserDetails.http.put");
     		if(userId.toString().isBlank()||userId.toString().isEmpty()) {
             	throw new InvalidInputException("Enter Valid User Id");
             }
@@ -104,8 +106,8 @@ public class UserController {
     @PostMapping()
     public ResponseEntity<?> createUser(@Valid @RequestBody User user,Errors error){
     	try {
-			logger.info("Start of UserController.createUser with userId "+user.getId());
-            statsDClient.incrementCounter("endpoint.createUser.http.post");
+			logger.info("This is User Post method for User: "+user.getId());
+			statsDClient.incrementCounter("endpoint.createUser.http.post");
     		if(error.hasErrors()) {
     			String response = error.getAllErrors().stream().map(ObjectError::getDefaultMessage)
     					.collect(Collectors.joining(","));

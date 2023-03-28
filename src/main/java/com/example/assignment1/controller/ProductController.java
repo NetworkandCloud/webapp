@@ -25,6 +25,12 @@ import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.bind.annotation.RequestParam;
 
+
+import com.timgroup.statsd.StatsDClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 import com.example.assignment1.constants.UserConstants;
 import com.example.assignment1.exeception.BadInputException;
 import com.example.assignment1.exeception.DataNotFoundExeception;
@@ -55,6 +61,11 @@ public class ProductController {
     @Autowired
     ImageService imageService;
 
+	@Autowired
+    StatsDClient statsDClient;
+
+    private static final Logger logger = LoggerFactory.getLogger(ProductController.class);
+
 	@RestControllerAdvice
 	public class MyExceptionHandler {
 		@ExceptionHandler(MethodArgumentNotValidException.class)
@@ -68,7 +79,9 @@ public class ProductController {
 
 	@PostMapping()
 	public ResponseEntity<?> createProduct(@Valid @RequestBody Product product, HttpServletRequest request) {
-		try {
+			try {
+				logger.info("This is Product Post method for Creating Product: ");
+				statsDClient.incrementCounter("endpoint.productCreate.http.post");
 			return new ResponseEntity<Product>(
 					productService.createProduct(product,
 							authservice.getUserNameFromToken(request.getHeader("Authorization").split(" ")[1])),
@@ -85,6 +98,8 @@ public class ProductController {
 	@GetMapping("/{productId}")
 	public ResponseEntity<?> getProduct(@PathVariable("productId") Long productId) {
 		try {
+			logger.info("This is Product  method for Getting a Product: ");
+            statsDClient.incrementCounter("endpoint.getProduct.http.get");
 			if (productId.toString().isBlank() || productId.toString().isEmpty()) {
 				throw new InvalidInputException("Enter Valid Product Id");
 			}
@@ -99,9 +114,11 @@ public class ProductController {
 	}
 
 	@PutMapping(value = "/{productId}")
-	public ResponseEntity<?> updateUserDetails(@PathVariable("productId") Long productId,
+	public ResponseEntity<?> updateProductDetails(@PathVariable("productId") Long productId,
 			@Valid @RequestBody Product product, HttpServletRequest request, Errors error) {
-		try {
+			try {
+				logger.info("This is Product  method for Updating a Product: ");
+				statsDClient.incrementCounter("endpoint.updateProductDetails.http.put");
 			if (productId.toString().isBlank() || productId.toString().isEmpty()) {
 				throw new InvalidInputException("Enter Valid Product Id");
 			}
@@ -123,9 +140,11 @@ public class ProductController {
 	}
 
 	@PatchMapping(value = "/{productId}")
-	public ResponseEntity<?> patchUserDetails(@PathVariable("productId") Long productId,
+	public ResponseEntity<?> patchProduct(@PathVariable("productId") Long productId,
 			@RequestBody Map<String, Object> updates, HttpServletRequest request) {
 		try {
+			logger.info("This is Product  method for Patching a Product: ");
+            statsDClient.incrementCounter("endpoint.patchProduct.http.patch");
 			if (productId.toString().isBlank() || productId.toString().isEmpty()) {
 				throw new InvalidInputException("Enter Valid Product Id");
 			}
@@ -146,8 +165,10 @@ public class ProductController {
 	}
 
 	@DeleteMapping(value = "/{productId}")
-	public ResponseEntity<?> deleteUserDetails(@PathVariable("productId") Long productId, HttpServletRequest request) {
+	public ResponseEntity<?> deleteProduct(@PathVariable("productId") Long productId, HttpServletRequest request) {
 		try {
+			logger.info("This is Product method for Deleting a Product: ");
+            statsDClient.incrementCounter("endpoint.deleteProduct.http.delete");
 			if (productId.toString().isBlank() || productId.toString().isEmpty()) {
 				throw new InvalidInputException("Enter Valid Product Id");
 			}
@@ -171,6 +192,8 @@ public class ProductController {
 	public ResponseEntity<?> saveImage(@PathVariable("product_id") Long productId,
 			@RequestParam("file") MultipartFile file, HttpServletRequest request) {
 		try {
+			logger.info("This is Image method for Saving an Image: ");
+            statsDClient.incrementCounter("endpoint.saveImage.http.post");
 			if (productId.toString().isBlank() || productId.toString().isEmpty()) {
 				throw new InvalidInputException("Enter Valid Product Id");
 			}
@@ -193,6 +216,8 @@ public class ProductController {
 	@GetMapping(value = "/{product_id}/image", produces = "application/json")
 	public ResponseEntity<?> getAllImages(@PathVariable("product_id") Long productId, HttpServletRequest request) {
 		try {
+			logger.info("This is Image method for Getting Info for all Image: ");
+            statsDClient.incrementCounter("endpoint.getAllImages.http.get");
 			if (productId.toString().isBlank() || productId.toString().isEmpty()) {
 				throw new InvalidInputException("Enter Valid Product Id");
 			}
@@ -216,6 +241,8 @@ public class ProductController {
 	public ResponseEntity<?> getImage(@PathVariable("product_id") Long productId,
 			@PathVariable("image_id") Long imageId, HttpServletRequest request) {
 		try {
+			logger.info("This is Image method for Getting an Image: ");
+            statsDClient.incrementCounter("endpoint.getImage.http.get");
 			if (productId.toString().isBlank() || productId.toString().isEmpty() || imageId.toString().isBlank()
 					|| imageId.toString().isEmpty()) {
 				throw new InvalidInputException("Enter Valid Product Id / ImageId");
@@ -242,6 +269,8 @@ public class ProductController {
 	public ResponseEntity<?> deleteImage(@PathVariable("product_id") Long productId,
 			@PathVariable("image_id") Long imageId, HttpServletRequest request) {
 		try {
+			logger.info("This is Image Delete method for Image: ");
+            statsDClient.incrementCounter("endpoint.deleteImage.http.delete");
 			if (productId.toString().isBlank() || productId.toString().isEmpty() || imageId.toString().isBlank()
 					|| imageId.toString().isEmpty()) {
 				throw new InvalidInputException("Enter Valid Product Id / ImageId");
