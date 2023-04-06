@@ -2,7 +2,6 @@
 Name:- "Naiya Adatiya"
 NEU ID:002771371
 This is a demo of webapp
-for DEMO_7
 
 -->This is a sample Java, Maven ,Spring Boot application which provides RESTful services using GET, POST, PUT
 
