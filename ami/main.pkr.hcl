@@ -85,6 +85,10 @@ build {
     source = "webservice.service"
     destination = "/tmp/"
   }
+  post-processor "manifest" {
+    output = "manifest.json"
+    strip_path = true
+  }
   /*provisioner "shell" {
     script = "script.sh"
   }
@@ -115,7 +119,3 @@ build {
 
 }
 
-post-processor "manifest"{
-  output = "manifest.json"
-  strip_path = true
-}
