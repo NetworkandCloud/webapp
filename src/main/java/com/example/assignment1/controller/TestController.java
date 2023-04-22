@@ -26,4 +26,12 @@ public class TestController {
 		statsDClient.incrementCounter("endpoint.getHealth.http.get");
         return new ResponseEntity<UserDto>( HttpStatus.OK);
     }
+	    
+    @GetMapping( value = "/v2" )
+    public ResponseEntity<?> getv2() {
+        logger.info("This is Testing Get method for Checking Healthz ");
+		statsDClient.incrementCounter("endpoint.getHealth.http.get");
+        return new ResponseEntity<UserDto>( HttpStatus.OK);
+    }
+	
 }
